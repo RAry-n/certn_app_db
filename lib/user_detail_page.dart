@@ -99,7 +99,7 @@ class UserDetailsPage extends StatelessWidget {
             bool isAuthorized = authSnapshot.data!;
             return Scaffold(
               appBar: AppBar(
-                title: Text(userProfile.name),
+                title: Text(userProfile.merchantName!),
               ),
               body: isAuthorized
                   ? Padding(

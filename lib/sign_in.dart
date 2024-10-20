@@ -25,7 +25,7 @@ class _SignInState extends State<SignIn> {
         title: Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(10),
-          child: Image.asset('assets/ondc_icon.png'),
+          // child: Image.asset('assets/ondc_icon.png'),
           // child: const Text(
           //   'ONDC',
           //   style: TextStyle(
@@ -54,7 +54,7 @@ class _SignInState extends State<SignIn> {
                 //     color: Colors.white,
                 //   ),
                 // )
-                child: Image.asset('assets/sign_in.png'),
+                // child: Image.asset('assets/sign_in.png'),
 
               ),
               Container(

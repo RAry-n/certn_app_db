@@ -29,7 +29,7 @@ class _SignUpState extends State<SignUp> {
           alignment: Alignment.center,
           margin: const EdgeInsets.all(10),
 
-          child: Image.asset('assets/ondc_icon.png'),
+          // child: Image.asset('assets/ondc_icon.png'),
           // child: const Text(
           //   'ONDC',
           //   style: TextStyle(
@@ -58,7 +58,7 @@ class _SignUpState extends State<SignUp> {
                 //     color: Colors.white,
                 //   ),
                 // )
-                child: Image.asset('assets/sign_up.png'),
+                // child: Image.asset('assets/sign_up.png'),
 
               ),
 

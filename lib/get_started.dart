@@ -43,12 +43,12 @@ class _GetStartedState extends State<GetStarted> {
               margin:  EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 19*fem),
               child:
               Text(
-                'An initiative by ONDC ',
+                'Certn ',
                 textAlign:  TextAlign.center,
                 style:  TextStyle (
-                  fontSize:  14*ffem,
+                  fontSize:  24*ffem,
                   fontWeight:  FontWeight.w600,
-                  height:  1.175*ffem/fem,
+                  height:  2.175*ffem/fem,
                   color:  Colors.white,
                 ),
               ),
@@ -58,18 +58,18 @@ class _GetStartedState extends State<GetStarted> {
               margin:  EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 25*fem),
               width:  252*fem,
               height:  99*fem,
-              child:
-              Image.asset(
-                'assets/ondc_get_started.png',
-                fit: BoxFit.cover,
-              ),
+              // child:
+              // // Image.asset(
+              //   'assets/ondc_get_started.png',
+              //   fit: BoxFit.cover,
+              // ),
             ),
             Container(
               // supportedbygovernmentofindiaMX (87:1862)
               margin:  EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 66*fem),
               child:
               Text(
-                'Supported by Government of India',
+                'Made for INTER IIT 13.0',
                 textAlign:  TextAlign.center,
                 style:  TextStyle(
                   fontSize:  14*ffem,
@@ -87,12 +87,12 @@ class _GetStartedState extends State<GetStarted> {
               margin:  EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 18*fem),
               width:  322*fem,
               height:  241.5*fem,
-              child:
-              Image.asset(
-                'assets/frame_get_started.png',
-                width:  322*fem,
-                height:  241.5*fem,
-              ),
+              // child:
+              // Image.asset(
+              //   'assets/frame_get_started.png',
+              //   width:  322*fem,
+              //   height:  241.5*fem,
+              // ),
             ),
             Container(
               // wemaintainthesimplicityforsell (88:2410)

@@ -11,6 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'encryption_helper.dart';
 import 'my_text_field.dart';
 
 class Register extends StatefulWidget {
@@ -71,7 +72,7 @@ class _RegisterState extends State<Register> {
         //           fontWeight: FontWeight.w500,
         //           fontSize: 30),
         //     )),
-        title: Image.asset('assets/ondc_icon.png'),
+        // title: Image.asset('assets/ondc_icon.png'),
         centerTitle: true,
         backgroundColor: Colors.grey[850],
       ),
@@ -162,6 +163,7 @@ class _RegisterState extends State<Register> {
   }
 
 
+
   void updateCount(){
 
   }
@@ -188,7 +190,6 @@ class _RegisterState extends State<Register> {
     }
 
   }
-
   void uploadProfile(Map data, String appKey, String userKey) {
     // Make sure all fields are filled
     if (data['merchantName'] == '' ||
@@ -199,6 +200,17 @@ class _RegisterState extends State<Register> {
       return;
     }
 
+    // Create an instance of the EncryptionHelper class
+    final encryptionHelper = EncryptionHelper();
+
+    // Encrypt each piece of sensitive data
+    data['merchantName'] = encryptionHelper.encryptData(data['merchantName']);
+    data['shopName'] = encryptionHelper.encryptData(data['shopName']);
+    data['merchantID'] = encryptionHelper.encryptData(data['merchantID']);
+    data['shopAddress'] = encryptionHelper.encryptData(data['shopAddress']);
+    data['appKey'] = encryptionHelper.encryptData(appKey);
+    data['userKey'] = encryptionHelper.encryptData(userKey);
+
     String? uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
       print("null uid");
@@ -208,11 +220,7 @@ class _RegisterState extends State<Register> {
     showLoaderDialog(context);
     final dbref = FirebaseDatabase.instance.ref('profile');
     try {
-      // Adding keys (appKey and userKey) to the user profile data
-      data['appKey'] = appKey;
-      data['userKey'] = userKey;
-
-      // Store the profile in Firebase
+      // Store the encrypted profile data in Firebase
       dbref.child(uid).set(data);
       Navigator.pop(context);
       displaySnackBar('Registered successfully!');
@@ -222,6 +230,41 @@ class _RegisterState extends State<Register> {
       displaySnackBar('Failed to register!');
     }
   }
+
+
+  // void uploadProfile(Map data, String appKey, String userKey) {
+  //   // Make sure all fields are filled
+  //   if (data['merchantName'] == '' ||
+  //       data['shopName'] == '' ||
+  //       data['merchantID'] == '' ||
+  //       data['shopAddress'] == '') {
+  //     displaySnackBar('Please fill in all the mandatory fields!');
+  //     return;
+  //   }
+  //
+  //   String? uid = FirebaseAuth.instance.currentUser?.uid;
+  //   if (uid == null) {
+  //     print("null uid");
+  //     return;
+  //   }
+  //
+  //   showLoaderDialog(context);
+  //   final dbref = FirebaseDatabase.instance.ref('profile');
+  //   try {
+  //     // Adding keys (appKey and userKey) to the user profile data
+  //     data['appKey'] = appKey;
+  //     data['userKey'] = userKey;
+  //
+  //     // Store the profile in Firebase
+  //     dbref.child(uid).set(data);
+  //     Navigator.pop(context);
+  //     displaySnackBar('Registered successfully!');
+  //     Navigator.pushReplacementNamed(context, '/home');
+  //   } catch (e) {
+  //     Navigator.pop(context);
+  //     displaySnackBar('Failed to register!');
+  //   }
+  // }
 
 
   // void uploadProfile(Map data) {
