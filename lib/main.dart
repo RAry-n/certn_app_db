@@ -1,3 +1,4 @@
+import 'package:certin/logs.dart';
 import 'package:certin/main_page.dart';
 import 'package:certin/register.dart';
 import 'package:certin/sign_in.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
       '/sign_up' : (context) => SignUp(),
       '/register': (context) => Register(),
       '/main_page': (context) => MainPage(),
+      '/log' : (context) => LogsPage(),
 
     },
     debugShowCheckedModeBanner: false,

@@ -5,9 +5,17 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import 'encryption_helper.dart';
+import 'logs.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool a = false;
 
   // Method to handle logout
   void _logout(BuildContext context) async {
@@ -29,9 +37,17 @@ class HomePage extends StatelessWidget {
             },
           ),
         ],
+        leading: IconButton(
+          onPressed: () {
+            setState(() {
+              a = !a;
+            });
+          },
+          icon: a ? Icon(Icons.enhanced_encryption) : Icon(Icons.no_encryption),
+        ),
       ),
       body: FutureBuilder<List<UserProfile>>(
-        future: fetchAllUsers(),
+        future: a ?fetchAllUsers() : fetchAllUsersEncrypted(),
         builder: (context, AsyncSnapshot<List<UserProfile>> snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -49,6 +65,10 @@ class HomePage extends StatelessWidget {
                 subtitle: Text(users[index].shopName!),
                 onTap: () {
                   // Navigate to User Details page with secure authorization
+                  final logService = LogService();
+
+// Log database access
+                  logService.addLog("Expanded data of ${users[index].merchantName} is accessed");
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -67,12 +87,68 @@ class HomePage extends StatelessWidget {
   }
 
   Future<List<UserProfile>> fetchAllUsers() async {
-    final ref = FirebaseDatabase.instance.ref('profile'); // Path to the users data in Firebase
+    final ref = FirebaseDatabase.instance.ref('profile'); // Path to the users' data in Firebase
     final snapshot = await ref.get();
 
     if (snapshot.exists) {
-      print("snap exist");
+      print("snap exists");
       try {
+        final logService = LogService();
+
+// Log database access
+        logService.addLog("Database is accessed(decrypted)");
+        var response = Map<String, Object?>.from(snapshot.value as Map);
+        Map<String, dynamic> usersMap = {};
+        List<UserProfile> list = [];
+
+        // Create an instance of the EncryptionHelper
+        final encryptionHelper = EncryptionHelper();
+
+        for (var item in response.entries) {
+          usersMap[item.key] = item.value;
+
+          // Decrypt each piece of sensitive data
+          String appKey = usersMap[item.key]['appKey'];
+          String imgUrl = usersMap[item.key]['imgUrl'];
+          String merchantID = usersMap[item.key]['merchantID'];
+          String merchantName = usersMap[item.key]['merchantName'];
+          String shopAddress = usersMap[item.key]['shopAddress'];
+          String shopName = usersMap[item.key]['shopName'];
+          String userKey = usersMap[item.key]['userKey'];
+
+          list.add(UserProfile(
+            appKey: appKey,
+            imgUrl: imgUrl,
+            merchantID: merchantID,
+            merchantName: merchantName,
+            shopAddress: shopAddress,
+            shopName: shopName,
+            userKey: userKey,
+          ));
+        }
+
+        print("list is $list");
+        return list;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      return [];
+    }
+    return [];
+  }
+
+  Future<List<UserProfile>> fetchAllUsersEncrypted() async {
+    final ref = FirebaseDatabase.instance.ref('profile'); // Path to the users' data in Firebase
+    final snapshot = await ref.get();
+
+    if (snapshot.exists) {
+      print("snap exists");
+      try {
+        final logService = LogService();
+
+// Log database access
+        logService.addLog("Database is accessed(encrypted)");
         var response = Map<String, Object?>.from(snapshot.value as Map);
         Map<String, dynamic> usersMap = {};
         List<UserProfile> list = [];
@@ -113,6 +189,8 @@ class HomePage extends StatelessWidget {
     }
     return [];
   }
+}
+
 
 // Fetch all registered users from Firebase Realtime Database
 //   Future<List<UserProfile>> fetchAllUsers() async {
@@ -156,7 +234,7 @@ class HomePage extends StatelessWidget {
 //     }
 //     return [];
 //   }
-}
+
 
 // UserProfile class to model the user's data
 class UserProfile {

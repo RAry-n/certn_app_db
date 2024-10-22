@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'encryption_helper.dart';
+import 'logs.dart';
 import 'my_text_field.dart';
 
 class Register extends StatefulWidget {
@@ -147,9 +148,9 @@ class _RegisterState extends State<Register> {
                       };
                       // Assuming this method is called during the signup process
                       String appKey = await getAppKey(); // Generated and stored on device
-                      String userKey = _generateAppKey(); // Unique key for each user
+                      String? userKey = FirebaseAuth.instance.currentUser?.uid; // Unique key for each user
                       // final data = ProfileDataClass(merchantName: nameController.text, shopName: shopNameController.text, merchantID: merchantIDController.text, shopAddress: shopAddressController.text, profilePicUrl: imgUrl);
-                      uploadProfile(data, appKey, userKey);
+                      uploadProfile(data, appKey, userKey!);
 
                       // String pass = passwordController.text;
                       // signIn(name, pass);
@@ -202,6 +203,9 @@ class _RegisterState extends State<Register> {
 
     // Create an instance of the EncryptionHelper class
     final encryptionHelper = EncryptionHelper();
+    final logService = LogService();
+
+
 
     // Encrypt each piece of sensitive data
     data['merchantName'] = encryptionHelper.encryptData(data['merchantName']);
@@ -224,7 +228,9 @@ class _RegisterState extends State<Register> {
       dbref.child(uid).set(data);
       Navigator.pop(context);
       displaySnackBar('Registered successfully!');
-      Navigator.pushReplacementNamed(context, '/home');
+      // Log database access
+      logService.addLog("New Profile Added");
+      Navigator.pushReplacementNamed(context, '/main_page');
     } catch (e) {
       Navigator.pop(context);
       displaySnackBar('Failed to register!');

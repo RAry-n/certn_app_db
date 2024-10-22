@@ -1,5 +1,6 @@
 import 'package:certin/encryption_helper.dart';
 import 'package:certin/home.dart';
+import 'package:certin/logs.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -512,8 +513,15 @@ class _DashboardState extends State<Dashboard> {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(20.0),
                                   onTap: () {
-                                    print("T4");
-                                    runChecks();
+                                    // print("T4");
+                                    // runChecks();
+                                    //Navigator.pushReplacementNamed(context, '/home');
+                                    // Log database access
+                                    final logService = LogService();
+
+// Log database access
+                                    logService.addLog("Database Logs are accessed");
+                                    Get.to(()=>const LogsPage());
                                   },
                                   child: Container(
                                     height: height * 0.175,

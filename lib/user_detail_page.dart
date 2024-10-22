@@ -8,95 +8,112 @@ import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home.dart';
+
 const String masterKey = 'z9N2rJe5SmdMNuTfG56GkHUtEydFBQVOVHhHdKX2r4k=';
+
 class UserDetailsPage extends StatelessWidget {
   final UserProfile userProfile;
 
   const UserDetailsPage({super.key, required this.userProfile});
 
-  // Example master key (store this securely)
-
-
-// Function to concatenate keys, decrypt and validate authorization
+  // Function to generate the secure key by concatenating appKey and userKey
   String generateSecureKey(String appKey, String userKey) {
     String concatenatedKey = appKey + userKey;
-
-    // Decrypt using the master key (in this case, we use HMAC for demo purposes)
-    var hmacSha256 = Hmac(sha256, utf8.encode(masterKey));
-    var digest = hmacSha256.convert(utf8.encode(concatenatedKey));
-
-    return digest.toString();
+    return concatenatedKey;
+   // return base64Encode(sha256.convert(utf8.encode(concatenatedKey)).bytes);
   }
 
-// Function to validate the key (e.g., match it with a stored value)
+  // Function to validate the secure key (checks if it matches the stored key)
   bool validateUserAccess(String secureKey, String storedKey) {
     return secureKey == storedKey;
   }
 
-  Future<bool> authorizeUser(String uid, String appKey) async {
-    // Retrieve the user profile from Firebase
-    final dbref = FirebaseDatabase.instance.ref('profile/$uid');
-    final snapshot = await dbref.get();
+  // Function to authorize the user
+  Future<bool> authorizeUser(String uid) async {
+    // Retrieve the appKey from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    String? appKey = prefs.getString('appKey');
+    String? userKey =FirebaseAuth.instance.currentUser?.uid;
+
+    // Get the user's data from Firebase Realtime Database
+    final dbRef = FirebaseDatabase.instance.ref('profile/$uid');
+    final snapshot = await dbRef.get();
 
     if (snapshot.exists) {
       Map<String, dynamic> userData = Map<String, dynamic>.from(snapshot.value as Map);
 
       // Extract the stored appKey and userKey from Firebase
-      String storedAppKey = userData['appKey'];
-      String userKey = userData['userKey'];
+      String storedAppKey = userData['appKey']; // The appKey stored in Firebase
+      String storedUserKey = userData['userKey']; // The userKey stored in Firebase
+      String storedKey = storedAppKey+storedUserKey;
+      // If no appKey exists in SharedPreferences, generate and save a new one
+      if (appKey == null) {
+        appKey = await _generateAndSaveAppKey(prefs);
+      }
 
-      // Concatenate appKey and userKey and generate the secure key
-      String secureKey = generateSecureKey(appKey, userKey);
+      // Generate a secure key by concatenating appKey and userKey
+      String secureKey = generateSecureKey(appKey, userKey!);//uid from auth
 
-      // Now validate the secure key (compare with the stored key if applicable)
-      return validateUserAccess(secureKey, storedAppKey);  // Assuming some validation logic
+      // Validate the generated secureKey with the stored appKey
+      return validateUserAccess(secureKey, storedKey);
     } else {
       return false; // User data not found
     }
   }
 
+  // Function to generate a new appKey and save it in SharedPreferences
+  Future<String> _generateAndSaveAppKey(SharedPreferences prefs) async {
+    // Generate a new appKey
+    String newAppKey = _generateAppKey();
 
-  Future<String> getAppKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? appKey = prefs.getString('appKey');
+    // Save the new appKey in SharedPreferences
+    await prefs.setString('appKey', newAppKey);
 
-    // If appKey does not exist, generate and save a new one
-    if (appKey == null) {
-      appKey = _generateAppKey();
-      await prefs.setString('appKey', appKey);
-    }
-
-    return appKey;
+    return newAppKey;
   }
+
+  // Generate a random app key (example: 16-character alphanumeric key)
   String _generateAppKey() {
-    // Generate a random app key (for example, 16-character alphanumeric key)
     const _chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     Random _rnd = Random.secure();
     return String.fromCharCodes(Iterable.generate(16, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
   }
 
+  // Function to get appKey from SharedPreferences
+  Future<String> getAppKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? appKey = prefs.getString('appKey');
+
+    if (appKey == null) {
+      appKey = await _generateAndSaveAppKey(prefs);
+    }
+
+    return appKey;
+  }
+
   @override
   Widget build(BuildContext context) {
+    String uid = FirebaseAuth.instance.currentUser!.uid;  // Current user ID
 
-
-    return FutureBuilder(
-      future: getAppKey(), // Get the app key of the current device
+    return FutureBuilder<String>(
+      future: getAppKey(),  // Fetch the appKey from SharedPreferences
       builder: (context, AsyncSnapshot<String> snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
         String appKey = snapshot.data!;  // Current app key
-        String uid = FirebaseAuth.instance.currentUser!.uid;  // Current user ID
 
-        return FutureBuilder(
-          future: authorizeUser(uid, appKey),
+        // Now proceed with authorizing the user
+        return FutureBuilder<bool>(
+          future: authorizeUser(uid),  // Call authorizeUser() to validate the user
           builder: (context, AsyncSnapshot<bool> authSnapshot) {
             if (!authSnapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
 
             bool isAuthorized = authSnapshot.data!;
+
             return Scaffold(
               appBar: AppBar(
                 title: Text(userProfile.merchantName!),
@@ -114,7 +131,7 @@ class UserDetailsPage extends StatelessWidget {
                 ),
               )
                   : const Center(
-                child: Text('Access Denied!'),
+                child: Text('Access Denied!'),  // Show this message if the user is not authorized
               ),
             );
           },

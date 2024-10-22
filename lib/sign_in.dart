@@ -198,7 +198,7 @@ class _SignInState extends State<SignIn> {
       );
       Navigator.pop(context);
       displaySnackBar('Signed in successfully!');
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/main_page');
 
       // } on FirebaseAuthException catch (e) {
       //   Navigator.pop(context);
